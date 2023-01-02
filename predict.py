@@ -19,7 +19,7 @@ class Predictor(BasePredictor):
     def setup(self):
         import __main__
         __main__.ModelCheckpoint = pl.callbacks.ModelCheckpoint
-
+# This creates a webserver to serve images over http. WARINIG: there is no access control, so this might unintentionally expose information
         self.device = torch.device("cpu")
         self.dict_json = json.load(open("./data/cocotalk.json"))
         self.ix_to_word = self.dict_json["ix_to_word"]
