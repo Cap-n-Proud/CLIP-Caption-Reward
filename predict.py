@@ -20,7 +20,7 @@ class Predictor(BasePredictor):
         import __main__
         __main__.ModelCheckpoint = pl.callbacks.ModelCheckpoint
 
-        self.device = torch.device("cuda:0")
+        self.device = torch.device("cpu")
         self.dict_json = json.load(open("./data/cocotalk.json"))
         self.ix_to_word = self.dict_json["ix_to_word"]
         self.vocab_size = len(self.ix_to_word)
@@ -48,7 +48,7 @@ class Predictor(BasePredictor):
         ),
     ) -> str:
 
-        self.device = torch.device("cuda:0")
+        self.device = torch.device("cpu")
         self.dict_json = json.load(open("./data/cocotalk.json"))
         self.ix_to_word = self.dict_json["ix_to_word"]
         self.vocab_size = len(self.ix_to_word)
