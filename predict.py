@@ -13,6 +13,7 @@ from cog import BasePredictor, Path, Input
 import captioning.utils.opts as opts
 import captioning.models as models
 import captioning.utils.misc as utils
+PORT = 8099
 
 
 class Predictor(BasePredictor):
@@ -20,6 +21,18 @@ class Predictor(BasePredictor):
         import __main__
         __main__.ModelCheckpoint = pl.callbacks.ModelCheckpoint
 # This creates a webserver to serve images over http. WARINIG: there is no access control, so this might unintentionally expose information
+        import threading
+        from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+        import sys
+        from time import sleep
+
+        MyRequestHandler = SimpleHTTPRequestHandler
+
+        server = ThreadingHTTPServer(("0.0.0.0", PORT), MyRequestHandler)
+        server_thread = threading.Thread(target=server.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+
         self.device = torch.device("cpu")
         self.dict_json = json.load(open("./data/cocotalk.json"))
         self.ix_to_word = self.dict_json["ix_to_word"]
@@ -101,7 +114,8 @@ class Predictor(BasePredictor):
             saved_model_opt = utils.deserialize(state_dict["_opt"])
             del state_dict["_opt"]
             # Make sure the saved opt is compatible with the curren topt
-            need_be_same = ["caption_model", "rnn_type", "rnn_size", "num_layers"]
+            need_be_same = ["caption_model",
+                            "rnn_type", "rnn_size", "num_layers"]
             for checkme in need_be_same:
                 if (
                     getattr(saved_model_opt, checkme)
@@ -144,7 +158,8 @@ class Predictor(BasePredictor):
             ),
         )
         pos_embed.weight = resize_pos_embed(
-            self.clip_model.visual.attnpool.positional_embedding.unsqueeze(0), pos_embed
+            self.clip_model.visual.attnpool.positional_embedding.unsqueeze(
+                0), pos_embed
         )
         self.clip_model.visual.attnpool.positional_embedding = pos_embed
 

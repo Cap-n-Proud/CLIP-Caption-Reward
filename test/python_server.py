@@ -16,6 +16,3 @@ while True:
         print("NON BLOCKING!")
     except KeyboardInterrupt:
         sys.exit()
-
-
-
