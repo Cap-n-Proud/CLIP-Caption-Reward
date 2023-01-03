@@ -5,7 +5,7 @@ import sys
 from time import sleep
 import os
 
-PORT = 8099
+PORT = 8098
 
 web_dir = os.path.join(os.path.dirname(__file__), '/')
 os.chdir(web_dir)
