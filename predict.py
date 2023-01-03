@@ -20,21 +20,30 @@ class Predictor(BasePredictor):
     def setup(self):
         import __main__
         __main__.ModelCheckpoint = pl.callbacks.ModelCheckpoint
-# This creates a webserver to serve images over http. WARINIG: there is no access control, so this might unintentionally expose information
+        # This creates a webserver to serve images over http. WARINIG: there is no access control, so this might unintentionally expose information
+        import http.server
+        import socketserver
         import threading
-        from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
         import sys
         from time import sleep
+        import os
 
-        MyRequestHandler = SimpleHTTPRequestHandler
+        PORT = 9099
 
-        server = ThreadingHTTPServer(("0.0.0.0", PORT), MyRequestHandler)
-        server_thread = threading.Thread(target=server.serve_forever)
+        web_dir = os.path.join(os.path.dirname(__file__), '/mnt/web')
+        os.chdir(web_dir)
+
+        Handler = http.server.SimpleHTTPRequestHandler
+        httpd = socketserver.TCPServer(("", PORT), Handler)
+        print("serving at port", PORT)
+        # httpd.serve_forever()
+
+        server_thread = threading.Thread(target=httpd.serve_forever)
         server_thread.daemon = True
         server_thread.start()
 
         self.device = torch.device("cpu")
-        self.dict_json = json.load(open("./data/cocotalk.json"))
+        self.dict_json = json.load(open("/src/data/cocotalk.json"))
         self.ix_to_word = self.dict_json["ix_to_word"]
         self.vocab_size = len(self.ix_to_word)
         self.clip_model, self.clip_transform = clip.load(
@@ -62,7 +71,7 @@ class Predictor(BasePredictor):
     ) -> str:
 
         self.device = torch.device("cpu")
-        self.dict_json = json.load(open("./data/cocotalk.json"))
+        self.dict_json = json.load(open("/src/data/cocotalk.json"))
         self.ix_to_word = self.dict_json["ix_to_word"]
         self.vocab_size = len(self.ix_to_word)
         self.clip_model, self.clip_transform = clip.load(
@@ -78,9 +87,9 @@ class Predictor(BasePredictor):
         )
 
         cfg = (
-            f"configs/phase1/clipRN50_{reward}.yml"
+            f"/src/configs/phase1/clipRN50_{reward}.yml"
             if reward == "mle"
-            else f"configs/phase2/clipRN50_{reward}.yml"
+            else f"/src/configs/phase2/clipRN50_{reward}.yml"
         )
         print("Loading cfg from", cfg)
 

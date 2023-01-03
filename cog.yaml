@@ -20,5 +20,4 @@ build:
     - "pyemd==0.5.1"
     - "gensim==4.2.0"
     - "pytorch-lightning==1.6.3"
-
 predict: "predict.py:Predictor"
